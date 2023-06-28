@@ -172,7 +172,7 @@ Future<Response> deleteProduct(RequestContext context) async {
           .remove(where.eq('_id', ObjectId.parse(params['id']!)));
       if (doc['n'] != 0) {
         return Response.json(
-          body: {'code': 200, 'message': 'delete product successfully'},
+          body: {'code': 200, 'message': 'product delete successfully'},
         );
       }
     }
