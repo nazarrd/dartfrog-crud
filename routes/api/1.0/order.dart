@@ -7,12 +7,12 @@ import '../../../utils/dlog.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   if (context.request.method == HttpMethod.get) {
-    return DbService.startConnection(context, readOrders(context));
+    return DbService.startConnection(context, readOrder(context));
   }
   return Response.json(statusCode: 405);
 }
 
-Future<Response> readOrders(RequestContext context) async {
+Future<Response> readOrder(RequestContext context) async {
   try {
     // set the connection
     final collection = await DbService.getCollection('orders');
