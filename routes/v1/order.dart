@@ -28,10 +28,7 @@ Future<Response> readOrder(RequestContext context) async {
         );
       }
     }
-    return Response.json(
-      statusCode: 404,
-      body: {'code': 404, 'message': 'user not found'},
-    );
+    return Response.json(body: {'code': 404, 'message': 'user not found'});
   } catch (error, stacktrace) {
     dlog('$error, $stacktrace');
     return Response.json(statusCode: 500);

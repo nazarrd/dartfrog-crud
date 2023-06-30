@@ -20,46 +20,6 @@ Future<Response> onRequest(RequestContext context) async {
   return Response.json(statusCode: 405);
 }
 
-Future<Response> readProduct(RequestContext context) async {
-  try {
-    // set the connection
-    final collection = await Database.getCollection('products');
-
-    // check if query parameter is present
-    final params = context.request.uri.queryParameters;
-    if (params.containsKey('id')) {
-      final doc = await collection
-          .findOne(where.eq('_id', ObjectId.parse(params['id']!)));
-      if (doc != null && doc.isNotEmpty) {
-        return Response.json(
-          body: {
-            'code': 200,
-            'message': 'get product by id successfully',
-            'data': ProductModel.fromJson(doc).toJson(),
-          },
-        );
-      } else {
-        return Response.json(
-          statusCode: 404,
-          body: {'code': 404, 'message': 'product not found'},
-        );
-      }
-    } else {
-      final doc = await collection.find().toList();
-      return Response.json(
-        body: {
-          'code': 200,
-          'message': 'get all product successfully',
-          'data': doc.map(ProductModel.fromJson).toList(),
-        },
-      );
-    }
-  } catch (error, stacktrace) {
-    dlog('$error, $stacktrace');
-    return Response.json(statusCode: 500);
-  }
-}
-
 Future<Response> createProduct(RequestContext context) async {
   try {
     // Set the connection
@@ -91,9 +51,47 @@ Future<Response> createProduct(RequestContext context) async {
     }
 
     return Response.json(
-      statusCode: 500,
       body: {'code': 500, 'message': 'failed to create product'},
     );
+  } catch (error, stacktrace) {
+    dlog('$error, $stacktrace');
+    return Response.json(statusCode: 500);
+  }
+}
+
+Future<Response> readProduct(RequestContext context) async {
+  try {
+    // set the connection
+    final collection = await Database.getCollection('products');
+
+    // check if query parameter is present
+    final params = context.request.uri.queryParameters;
+    if (params.containsKey('id')) {
+      final doc = await collection
+          .findOne(where.eq('_id', ObjectId.parse(params['id']!)));
+      if (doc != null && doc.isNotEmpty) {
+        return Response.json(
+          body: {
+            'code': 200,
+            'message': 'get product by id successfully',
+            'data': ProductModel.fromJson(doc).toJson(),
+          },
+        );
+      } else {
+        return Response.json(
+          body: {'code': 404, 'message': 'product not found'},
+        );
+      }
+    } else {
+      final doc = await collection.find().toList();
+      return Response.json(
+        body: {
+          'code': 200,
+          'message': 'get all product successfully',
+          'data': doc.map(ProductModel.fromJson).toList(),
+        },
+      );
+    }
   } catch (error, stacktrace) {
     dlog('$error, $stacktrace');
     return Response.json(statusCode: 500);
@@ -144,15 +142,9 @@ Future<Response> updateProduct(RequestContext context) async {
         );
       }
 
-      return Response.json(
-        statusCode: 404,
-        body: {'code': 404, 'message': 'product not found'},
-      );
+      return Response.json(body: {'code': 404, 'message': 'product not found'});
     }
-    return Response.json(
-      statusCode: 404,
-      body: {'code': 404, 'message': 'product not found'},
-    );
+    return Response.json(body: {'code': 404, 'message': 'product not found'});
   } catch (error, stacktrace) {
     dlog('$error, $stacktrace');
     return Response.json(statusCode: 500);
@@ -175,10 +167,7 @@ Future<Response> deleteProduct(RequestContext context) async {
         );
       }
     }
-    return Response.json(
-      statusCode: 404,
-      body: {'code': 404, 'message': 'product not found'},
-    );
+    return Response.json(body: {'code': 404, 'message': 'product not found'});
   } catch (error, stacktrace) {
     dlog('$error, $stacktrace');
     return Response.json(statusCode: 500);

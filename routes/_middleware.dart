@@ -44,12 +44,13 @@ Middleware mainHandler() {
       }
 
       final response = await handler(context);
+      final body = await _decodeBody(response);
+      final code = body.code ?? response.statusCode;
       if (handledCode.any((e) => e.code == response.statusCode)) {
-        final body = await _decodeBody(response);
         return Response.json(
           statusCode: response.statusCode,
           body: GeneralModel(
-            code: body.code ?? response.statusCode,
+            code: code,
             message: body.message ??
                 handledCode
                     .firstWhere((e) => e.code == response.statusCode)
@@ -57,7 +58,11 @@ Middleware mainHandler() {
           ),
         );
       }
-      return response;
+      return Response.json(
+        statusCode: code,
+        headers: response.headers,
+        body: jsonDecode(await response.body()),
+      );
     };
   };
 }
