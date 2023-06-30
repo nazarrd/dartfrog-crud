@@ -1,22 +1,21 @@
 import 'dart:convert';
 
+import 'package:crud/models/product_model.dart';
+import 'package:crud/services/database.dart';
+import 'package:crud/utils/dlog.dart';
 import 'package:dart_frog/dart_frog.dart';
 import 'package:mongo_dart/mongo_dart.dart';
-
-import '../../../models/product_model.dart';
-import '../../../services/db_services.dart';
-import '../../../utils/dlog.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   final method = context.request.method;
   if (method == HttpMethod.post) {
-    return DbService.startConnection(context, createProduct(context));
+    return Database.connectDb(createProduct(context));
   } else if (method == HttpMethod.get) {
-    return DbService.startConnection(context, readProduct(context));
+    return Database.connectDb(readProduct(context));
   } else if (method == HttpMethod.patch) {
-    return DbService.startConnection(context, updateProduct(context));
+    return Database.connectDb(updateProduct(context));
   } else if (method == HttpMethod.delete) {
-    return DbService.startConnection(context, deleteProduct(context));
+    return Database.connectDb(deleteProduct(context));
   }
   return Response.json(statusCode: 405);
 }
@@ -24,7 +23,7 @@ Future<Response> onRequest(RequestContext context) async {
 Future<Response> readProduct(RequestContext context) async {
   try {
     // set the connection
-    final collection = await DbService.getCollection('products');
+    final collection = await Database.getCollection('products');
 
     // check if query parameter is present
     final params = context.request.uri.queryParameters;
@@ -64,7 +63,7 @@ Future<Response> readProduct(RequestContext context) async {
 Future<Response> createProduct(RequestContext context) async {
   try {
     // Set the connection
-    final collection = await DbService.getCollection('products');
+    final collection = await Database.getCollection('products');
 
     // Parse the request body to retrieve the product data
     final requestBody =
@@ -113,7 +112,7 @@ Future<Response> updateProduct(RequestContext context) async {
           jsonDecode(await context.request.body()) as Map<String, dynamic>?;
 
       // Fetch the product from the database
-      final collection = await DbService.getCollection('products');
+      final collection = await Database.getCollection('products');
       final product = await collection.findOne(where.eq('_id', productId));
 
       if (product != null) {
@@ -163,7 +162,7 @@ Future<Response> updateProduct(RequestContext context) async {
 Future<Response> deleteProduct(RequestContext context) async {
   try {
     // set the connection
-    final collection = await DbService.getCollection('products');
+    final collection = await Database.getCollection('products');
 
     // check if query parameter is present
     final params = context.request.uri.queryParameters;

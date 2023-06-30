@@ -1,16 +1,9 @@
 import 'dart:convert';
 
+import 'package:crud/config/app_config.dart';
+import 'package:crud/models/general_model.dart';
+import 'package:crud/services/secure.dart';
 import 'package:dart_frog/dart_frog.dart';
-
-import '../config/app_config.dart';
-import '../models/general_model.dart';
-
-List<({int code, String status})> handledCode = [
-  (code: 400, status: 'bad request'),
-  (code: 404, status: 'route not found'),
-  (code: 405, status: 'method not allowed'),
-  (code: 500, status: 'internal server error'),
-];
 
 Handler middleware(Handler handler) {
   return handler.use(requestLogger()).use(mainHandler());
@@ -19,29 +12,40 @@ Handler middleware(Handler handler) {
 Middleware mainHandler() {
   return (Handler handler) {
     return (RequestContext context) async {
-      if (environment == Environment.prod) {
+      // list reponse code handled
+      final handledCode = <({int code, String status})>[
+        (code: 400, status: 'bad request'),
+        (code: 404, status: 'route not found'),
+        (code: 405, status: 'method not allowed'),
+        (code: 500, status: 'internal server error'),
+      ];
+
+      // block postman request in production
+      if (AppConfig.env == 'PROD') {
         final contentType = context.request.headers['user-agent'];
         if (contentType?.toLowerCase().contains('postman') ?? false) {
           return Response.json(
             statusCode: 400,
-            body: handledCode.firstWhere((e) => e.code == 400).status,
+            body: GeneralModel(
+              code: 400,
+              message: handledCode.firstWhere((e) => e.code == 400).status,
+            ),
           );
         }
       }
 
+      // verify a token
+      final tokenValid = _checkToken(context.request);
+      if (!tokenValid) {
+        return Response.json(
+          statusCode: 401,
+          body: GeneralModel(code: 401, message: 'invalid token'),
+        );
+      }
+
       final response = await handler(context);
       if (handledCode.any((e) => e.code == response.statusCode)) {
-        final bodyBase = await response.body();
-
-        GeneralModel body;
-        try {
-          body = GeneralModel.fromJson(
-            jsonDecode(bodyBase) as Map<String, dynamic>,
-          );
-        } catch (_) {
-          body = GeneralModel(message: bodyBase);
-        }
-
+        final body = await _decodeBody(response);
         return Response.json(
           statusCode: response.statusCode,
           body: GeneralModel(
@@ -56,4 +60,31 @@ Middleware mainHandler() {
       return response;
     };
   };
+}
+
+bool _checkToken(Request request) {
+  final nonTokenUrl = <String>['auth'];
+  try {
+    if (!nonTokenUrl.contains(request.url.pathSegments[1])) {
+      if (AppConfig.secretKey == null) throw Exception();
+      final token = request.headers['Authorization'];
+      Secure().jtwVerify(token);
+    }
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+Future<GeneralModel> _decodeBody(Response response) async {
+  final bodyBase = await response.body();
+  GeneralModel body;
+  try {
+    body = GeneralModel.fromJson(
+      jsonDecode(bodyBase) as Map<String, dynamic>,
+    );
+  } catch (_) {
+    body = GeneralModel(message: bodyBase);
+  }
+  return body;
 }

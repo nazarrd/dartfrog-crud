@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_print
-import '../config/app_config.dart';
+import 'package:crud/config/app_config.dart';
 
 void dlog(dynamic log) {
-  if (environment == Environment.dev) {
+  if (AppConfig.env == 'DEV') {
     if (log is String) {
       const maxLogSize = 1000;
       for (var i = 0; i <= log.length / maxLogSize; i++) {

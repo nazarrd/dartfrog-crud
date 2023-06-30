@@ -7,3 +7,4 @@ linter:
   rules:
     no_default_cases: false
     public_member_api_docs: false
+    avoid_dynamic_calls: false
