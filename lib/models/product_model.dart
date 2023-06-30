@@ -1,7 +1,7 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
-class ProductData {
-  ProductData({
+class ProductModel {
+  ProductModel({
     this.id,
     this.name,
     this.description,
@@ -9,7 +9,7 @@ class ProductData {
     this.price,
   });
 
-  ProductData.fromJson(Map<String, dynamic> json) {
+  ProductModel.fromJson(Map<String, dynamic> json) {
     id = json['_id'] as ObjectId?;
     name = json['name'] as String?;
     description = json['description'] as String?;

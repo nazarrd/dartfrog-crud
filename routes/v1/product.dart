@@ -35,7 +35,7 @@ Future<Response> readProduct(RequestContext context) async {
           body: {
             'code': 200,
             'message': 'get product by id successfully',
-            'data': ProductData.fromJson(doc).toJson(),
+            'data': ProductModel.fromJson(doc).toJson(),
           },
         );
       } else {
@@ -50,7 +50,7 @@ Future<Response> readProduct(RequestContext context) async {
         body: {
           'code': 200,
           'message': 'get all product successfully',
-          'data': doc.map(ProductData.fromJson).toList(),
+          'data': doc.map(ProductModel.fromJson).toList(),
         },
       );
     }
@@ -70,7 +70,7 @@ Future<Response> createProduct(RequestContext context) async {
         jsonDecode(await context.request.body()) as Map<String, dynamic>?;
 
     // Create a new document with the product data
-    final product = ProductData(
+    final product = ProductModel(
       name: requestBody?['name'] as String?,
       description: requestBody?['description'] as String?,
       image: requestBody?['image'] as String?,
@@ -117,7 +117,7 @@ Future<Response> updateProduct(RequestContext context) async {
 
       if (product != null) {
         // Update the price field if it exists in the updated fields
-        final newProduct = ProductData(
+        final newProduct = ProductModel(
           name: (updatedFields?['name'] ?? product['price']) as String?,
           description: (updatedFields?['description'] ?? product['description'])
               as String?,
