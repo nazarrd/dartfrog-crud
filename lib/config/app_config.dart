@@ -6,10 +6,9 @@ abstract class AppConfig {
 
   // load env
   static String? get env => _env['SERVER_ENV'];
-  static String get cryptoKey =>
-      _env[env == 'DEV' ? 'CRYPTO_DEV_KEY' : 'CRYPTO_PROD_KEY'] ?? '';
+  static String get cryptoKey => _env['CRYPTO_KEY'] ?? '';
   static SecretKey? get secretKey {
-    final key = _env[env == 'DEV' ? 'JWT_DEV_KEY' : 'JWT_PROD_KEY'];
+    final key = _env['JWT_KEY'];
     if (key != null) return SecretKey(key);
     return null;
   }

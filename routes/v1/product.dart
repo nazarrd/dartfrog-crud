@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:crud/models/product_model.dart';
 import 'package:crud/services/database.dart';
 import 'package:crud/utils/dlog.dart';
+import 'package:crud/utils/required_field.dart';
 import 'package:dart_frog/dart_frog.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
@@ -30,23 +31,40 @@ Future<Response> createProduct(RequestContext context) async {
         jsonDecode(await context.request.body()) as Map<String, dynamic>?;
 
     // Create a new document with the product data
-    final product = ProductModel(
-      name: requestBody?['name'] as String?,
-      description: requestBody?['description'] as String?,
-      image: requestBody?['image'] as String?,
-      price: requestBody?['price'] as int?,
-    );
+    final name = requestBody?['name'];
+    final description = requestBody?['description'];
+    final image = requestBody?['image'];
+    final price = requestBody?['price'];
 
-    // Insert the new document into the collection
-    final result = await collection.insertOne(product.toJson()..remove('id'));
-    if (result.isSuccess) {
-      // Product added successfully
+    // check required input
+    final validator = requiredField([
+      RequiredModel(key: 'name', value: name, type: String),
+      RequiredModel(key: 'description', value: description, type: String),
+      RequiredModel(key: 'image', value: image, type: String),
+      RequiredModel(key: 'price', value: price, type: int),
+    ]);
+    if (validator.isEmpty) {
+      // Insert the new document into the collection
+      final product = ProductModel(
+        name: name as String?,
+        description: description as String?,
+        image: image as String?,
+        price: price as int?,
+      );
+      final result = await collection.insertOne(product.toJson()..remove('id'));
+      if (result.isSuccess) {
+        // Product added successfully
+        return Response.json(
+          body: {
+            'code': 200,
+            'message': 'create product successfully',
+            'data': product.toJson()..['id'] = result.id as ObjectId?
+          },
+        );
+      }
+    } else {
       return Response.json(
-        body: {
-          'code': 200,
-          'message': 'create product successfully',
-          'data': product.toJson()..['id'] = result.id as ObjectId?
-        },
+        body: {'code': 411, 'message': validator},
       );
     }
 

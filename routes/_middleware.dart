@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:crud/config/app_config.dart';
 import 'package:crud/models/general_model.dart';
 import 'package:crud/services/secure.dart';
+import 'package:crud/utils/dlog.dart';
 import 'package:dart_frog/dart_frog.dart';
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 Handler middleware(Handler handler) {
   return handler.use(requestLogger()).use(mainHandler());
@@ -37,6 +39,9 @@ Middleware mainHandler() {
       // verify a token
       final tokenValid = _checkToken(context.request);
       if (!tokenValid) {
+        final jwt =
+            Secure().jwtSign(JWT(Secure().aesEncrypt(jsonEncode({'id': 123}))));
+        dlog(jwt);
         return Response.json(
           statusCode: 401,
           body: GeneralModel(code: 401, message: 'invalid token'),

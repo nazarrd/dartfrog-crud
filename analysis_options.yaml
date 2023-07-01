@@ -8,3 +8,4 @@ linter:
     no_default_cases: false
     public_member_api_docs: false
     avoid_dynamic_calls: false
+    lines_longer_than_80_chars: false
